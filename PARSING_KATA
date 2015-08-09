@@ -1,0 +1,69 @@
+PROGRAM PARSING_KATA
+
+$INCLUDE INCLUDE GENPLUS.INC
+
+STRING_TO_PARSE = "100+3*3" ;!* Result should be 309
+CRT "INPUT STRING: ": STRING_TO_PARSE
+CRT "TOTAL:        ": TOTAL_STRING(STRING_TO_PARSE)
+
+END PROGRAM
+
+!-----------------------------------------------------------------------------
+! Parse the given string and perform the math on the string to provide a total 
+FUNCTION TOTAL_STRING(IN STRING_TO_PARSE)
+    VAR RUNNING_TOTAL = EXTRACT_NUMBER(GENPLUS$IO STRING_TO_PARSE) ;!* Get the first number from the string to start us off
+
+    LOOP
+        VAR OPERAND    = EXTRACT_OPERAND(GENPLUS$IO STRING_TO_PARSE)
+        VAR NEW_NUMBER = EXTRACT_NUMBER(GENPLUS$IO STRING_TO_PARSE)
+    UNTIL (NEW_NUMBER = "") DO
+        RUNNING_TOTAL = PERFORM_MATH(RUNNING_TOTAL, OPERAND, NEW_NUMBER)    
+    REPEAT
+    RETURN RUNNING_TOTAL
+END FUNCTION
+
+!-----------------------------------------------------------------------------
+! Extract a number from the given string, remove the characters from the 
+! string so we don't have to keep a pointer to where we are in the string,
+! always start from position 1
+FUNCTION EXTRACT_NUMBER(IN OUT PARSE_STRING)
+    VAR NUMBER_STRING = ""
+    VAR POS_INDEX = 1
+    LOOP
+        VAR CHARACTER = PARSE_STRING[POS_INDEX, 1]
+        VAR NON_NUMERIC = INDEX("+-/*", CHARACTER, 1)
+    UNTIL (NON_NUMERIC > 0) OR (POS_INDEX > LEN(PARSE_STRING)) DO
+        POS_INDEX = POS_INDEX + 1
+        NUMBER_STRING = NUMBER_STRING : CHARACTER
+    REPEAT
+    PARSE_STRING = SHRINK_STRING(PARSE_STRING, LEN(NUMBER_STRING))
+    RETURN NUMBER_STRING
+END FUNCTION
+
+!-----------------------------------------------------------------------------
+! Extract an operand from the given string, remove the character from the 
+! string so we don't have to keep a pointer to where we are in the string,
+! always start from position 1
+FUNCTION EXTRACT_OPERAND(IN OUT PARSE_STRING)
+    VAR OPERAND = PARSE_STRING[1,1]
+    PARSE_STRING = SHRINK_STRING(PARSE_STRING, 1)
+    RETURN OPERAND
+END FUNCTION
+
+!-----------------------------------------------------------------------------
+! Remove the given number of characters from the beginning of the given string 
+FUNCTION SHRINK_STRING(IN STRING_TO_SHRINK, IN CHARS_TO_REMOVE)
+    STRING_TO_SHRINK = STRING_TO_SHRINK[CHARS_TO_REMOVE + 1, LEN(STRING_TO_SHRINK)]
+    RETURN STRING_TO_SHRINK
+END FUNCTION
+
+!-----------------------------------------------------------------------------
+! Perform the math on the given parameters
+FUNCTION PERFORM_MATH(IN RUNNING_TOTAL, IN OPERAND, IN NEW_NUMBER)
+    CRT "PERFORM MATH: ": RUNNING_TOTAL : OPERAND : NEW_NUMBER
+    IF (OPERAND = "+") THEN RUNNING_TOTAL = (RUNNING_TOTAL + NEW_NUMBER)
+    IF (OPERAND = "-") THEN RUNNING_TOTAL = (RUNNING_TOTAL - NEW_NUMBER)
+    IF (OPERAND = "*") THEN RUNNING_TOTAL = (RUNNING_TOTAL * NEW_NUMBER)
+    IF (OPERAND = "/") THEN RUNNING_TOTAL = (RUNNING_TOTAL / NEW_NUMBER)
+    RETURN RUNNING_TOTAL
+END FUNCTION
